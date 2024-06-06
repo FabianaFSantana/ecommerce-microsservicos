@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -43,7 +44,7 @@ public class ArquivoService {
         return arquivoRepository.save(arquivo);
     }
 
-    public byte[] downloadArquivo(String nome) throws IOException {
+    public ByteArrayResource downloadArquivo(String nome) throws IOException {
         Optional<Arquivo> arquivo = arquivoRepository.findByNome(nome);
 
         if (arquivo.isPresent()) {
@@ -51,7 +52,7 @@ public class ArquivoService {
 
             File file = new File(path);
 
-            return Files.readAllBytes(file.toPath());
+            return new ByteArrayResource(Files.readAllBytes(file.toPath()));
         }
 
         return null;

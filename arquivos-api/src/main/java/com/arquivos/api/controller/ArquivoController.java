@@ -3,7 +3,10 @@ package com.arquivos.api.controller;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -35,9 +38,21 @@ public class ArquivoController {
     }
 
     @GetMapping
-    public ResponseEntity<?> downloadArquivo(@RequestParam("nome") String nome) throws IOException {
-        byte[] arquivo = arquivoService.downloadArquivo(nome);
-        return ResponseEntity.ok().body(arquivo);
+    public ResponseEntity<ByteArrayResource> downloadArquivo(@RequestParam("nome") String nome) throws IOException {
+        if (!arquivoService.arquivoExiste(nome)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=" + nome);
+
+        ByteArrayResource arquivo = arquivoService.downloadArquivo(nome);
+        
+        return ResponseEntity.ok()
+                .headers(headers)
+                .contentLength(arquivo.contentLength())
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(arquivo);
     }
 
     @Autowired
